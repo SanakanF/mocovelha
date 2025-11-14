@@ -3,25 +3,54 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MocoVelha</title>
+    <title>Moco Moco - Jogo da Velha</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <main class="container">
-      <h1>MocoVelha</h1>
-      <section class="board" aria-label="Tabuleiro do jogo da velha">
-        <button class="cell" aria-label="Célula 1"></button>
-        <button class="cell" aria-label="Célula 2"></button>
-        <button class="cell" aria-label="Célula 3"></button>
-        <button class="cell" aria-label="Célula 4"></button>
-        <button class="cell" aria-label="Célula 5"></button>
-        <button class="cell" aria-label="Célula 6"></button>
-        <button class="cell" aria-label="Célula 7"></button>
-        <button class="cell" aria-label="Célula 8"></button>
-        <button class="cell" aria-label="Célula 9"></button>
+    <main class="page">
+      <header class="header">
+        <h1>Moco Moco - Jogo da Velha</h1>
+        <p class="subtitle">Escolha seu modo de jogo e desafie a IA treinada com Q-Learning.</p>
+      </header>
+
+      <section class="controls" aria-label="Configurações do jogo">
+        <div class="mode-controls">
+          <h2>Modo de jogo</h2>
+          <div class="mode-buttons" role="group" aria-label="Seleção de modo">
+            <button type="button" class="mode-button active" data-mode="pvp">Humano vs Humano</button>
+            <button type="button" class="mode-button" data-mode="ai">Humano vs IA</button>
+          </div>
+        </div>
+
+        <div class="ai-controls inactive" aria-label="Seleção de nível da IA">
+          <h2>Nível da IA</h2>
+          <p class="hint">Escolha quantos episódios de treino a IA terá antes da partida.</p>
+          <div class="level-buttons" role="group" aria-label="Níveis de treino">
+            <button type="button" class="level-button active" data-target="0">Nível 0 - Aleatório (0 episódios)</button>
+            <button type="button" class="level-button" data-target="1000">Nível 1 - 1.000 episódios</button>
+            <button type="button" class="level-button" data-target="10000">Nível 2 - 10.000 episódios</button>
+            <button type="button" class="level-button" data-target="50000">Nível 3 - 50.000 episódios</button>
+          </div>
+        </div>
       </section>
-      <button class="train-btn" type="button">Treinar IA</button>
+
+      <section class="game" aria-label="Área do jogo">
+        <div class="status" id="status-message" role="status">Selecione um modo e jogue!</div>
+        <div class="board" role="grid" aria-label="Tabuleiro do jogo da velha">
+          <button class="cell" data-index="0" aria-label="Casa 1"></button>
+          <button class="cell" data-index="1" aria-label="Casa 2"></button>
+          <button class="cell" data-index="2" aria-label="Casa 3"></button>
+          <button class="cell" data-index="3" aria-label="Casa 4"></button>
+          <button class="cell" data-index="4" aria-label="Casa 5"></button>
+          <button class="cell" data-index="5" aria-label="Casa 6"></button>
+          <button class="cell" data-index="6" aria-label="Casa 7"></button>
+          <button class="cell" data-index="7" aria-label="Casa 8"></button>
+          <button class="cell" data-index="8" aria-label="Casa 9"></button>
+        </div>
+        <button type="button" class="reset-button" id="reset-button">Reiniciar partida</button>
+      </section>
     </main>
+
     <script src="script.js"></script>
   </body>
 </html>
