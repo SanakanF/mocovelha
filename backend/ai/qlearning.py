@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import json
 import random
+from pathlib import Path
 from typing import Dict, List, Optional
 
 from .game import (
@@ -26,6 +28,12 @@ class QLearningAgent:
         self.epsilon = epsilon
         self.Q: Dict[str, Dict[int, float]] = {}
         self.total_episodes: int = 0
+        self.model_path: Path | None = None
+
+    def set_model_path(self, path: Path) -> None:
+        """Define o caminho utilizado para salvar/carregar a Q-table."""
+
+        self.model_path = path
 
     def get_state(self, board: List[str]) -> str:
         """Converte o tabuleiro em uma string estável."""
@@ -151,6 +159,51 @@ class QLearningAgent:
         for _ in range(episodes):
             self.play_self_game()
         self.total_episodes += episodes
+
+    def save(self) -> None:
+        """Salva a Q-table e metadados no caminho configurado."""
+
+        if self.model_path is None:
+            return
+
+        data = {
+            "total_episodes": self.total_episodes,
+            "Q": {
+                state: {str(action): value for action, value in actions.items()}
+                for state, actions in self.Q.items()
+            },
+        }
+
+        self.model_path.parent.mkdir(parents=True, exist_ok=True)
+        self.model_path.write_text(json.dumps(data))
+
+    def load(self) -> None:
+        """Carrega a Q-table previamente persistida, se disponível."""
+
+        self.Q = {}
+        self.total_episodes = 0
+
+        if self.model_path is None:
+            return
+
+        if not self.model_path.exists():
+            return
+
+        try:
+            data = json.loads(self.model_path.read_text())
+        except json.JSONDecodeError:
+            return
+
+        self.total_episodes = int(data.get("total_episodes", 0))
+        q_table: Dict[str, Dict[str, float]] = data.get("Q", {})
+        for state, actions in q_table.items():
+            self.Q[state] = {}
+            for action_str, value in actions.items():
+                try:
+                    action_int = int(action_str)
+                except ValueError:
+                    continue
+                self.Q[state][action_int] = float(value)
 
     def best_move(self, board: List[str]) -> int:
         """Retorna a melhor jogada conhecida para o tabuleiro fornecido."""

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Literal
 
 from pydantic import BaseModel, Field, validator
@@ -23,9 +25,16 @@ class TrainLevelRequest(BaseModel):
     target_episodes: int = Field(..., ge=0)
 
 
+class SetLevelRequest(BaseModel):
+    level: str
+
+
 class StateResponse(BaseModel):
     total_episodes: int
     known_states: int
+    level: str
+    model_loaded: bool
+    episodes_target: int | None = None
 
 
 class SimpleResponse(BaseModel):
