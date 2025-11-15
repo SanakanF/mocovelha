@@ -1,6 +1,6 @@
 # Frontend MocoVelha
 
-Interface estática inicial do projeto MocoVelha.
+Interface estática do projeto MocoVelha com skin temática e melhorias interativas.
 
 ## Como visualizar
 
@@ -8,6 +8,12 @@ Basta abrir o arquivo `index.html` em um navegador moderno. Nenhuma dependência
 
 ## Estrutura
 
-- `index.html`: marcação principal do tabuleiro e botões.
-- `style.css`: estilos básicos do tabuleiro 3x3.
-- `script.js`: script JavaScript inicial que indica o carregamento do projeto no console do navegador.
+- `index.html`: marcação principal do tabuleiro, botões e painel de desenvolvedor oculto.
+- `style.css`: estilos da skin "Capivara vs Berinjela" e visual do painel dev.
+- `script.js`: lógica do jogo, integração com a API e camada de áudio Web Audio.
+
+## Novidades do Plano 4
+
+- **Skin Capivara x Berinjela**: as células usam classes `.cell-x` e `.cell-o` para aplicar o visual dos personagens via CSS.
+- **Sons do jogo**: a camada `soundManager` gera efeitos de clique, vitória, empate e "pensando" utilizando Web Audio API.
+- **Painel dev oculto**: pressione `Ctrl + Shift + M` para abrir o overlay com estatísticas retornadas pela rota `/state`.
