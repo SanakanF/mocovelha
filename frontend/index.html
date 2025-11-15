@@ -61,6 +61,49 @@
       </section>
     </main>
 
+    <!-- Painel de desenvolvedor oculto -->
+    <div id="dev-panel" class="dev-panel" aria-hidden="true">
+      <div class="dev-panel__card" role="dialog" aria-modal="true" aria-labelledby="dev-panel-title">
+        <header class="dev-panel__header">
+          <h2 id="dev-panel-title">Painel de Desenvolvedor</h2>
+          <button type="button" class="dev-panel__close" id="dev-panel-close" aria-label="Fechar painel">
+            ✕
+          </button>
+        </header>
+        <div class="dev-panel__content">
+          <p class="dev-panel__intro">Dados em tempo real do agente Q-Learning.</p>
+          <dl class="dev-panel__stats">
+            <div>
+              <dt>Nível atual</dt>
+              <dd id="dev-level">—</dd>
+            </div>
+            <div>
+              <dt>Total de episódios</dt>
+              <dd id="dev-episodes">—</dd>
+            </div>
+            <div>
+              <dt>Estados conhecidos</dt>
+              <dd id="dev-states">—</dd>
+            </div>
+            <div>
+              <dt>Meta de episódios</dt>
+              <dd id="dev-target">—</dd>
+            </div>
+            <div>
+              <dt>Modelo carregado</dt>
+              <dd id="dev-loaded">—</dd>
+            </div>
+          </dl>
+          <section class="dev-panel__qtable">
+            <h3>Q-Table (amostra)</h3>
+            <p id="dev-qtable-message">
+              TODO: conectar uma amostra da Q-Table quando o agente expuser estes dados via API.
+            </p>
+          </section>
+        </div>
+      </div>
+    </div>
+
     <script src="script.js"></script>
   </body>
 </html>
