@@ -1,5 +1,4 @@
 console.log("Rodando MocoVelha frontend");
-
 const winningCombinations = [
   [0, 1, 2],
   [3, 4, 5],
@@ -18,12 +17,23 @@ const levelButtons = Array.from(document.querySelectorAll(".level-button"));
 const statusMessage = document.getElementById("status-message");
 const resetButton = document.getElementById("reset-button");
 const aiControls = document.querySelector(".ai-controls");
+const iaLevelElement = document.getElementById("ia-level");
+const iaEpisodesElement = document.getElementById("ia-episodes");
+const iaStatesElement = document.getElementById("ia-states");
+const iaLoadedElement = document.getElementById("ia-loaded");
+const trainButton = document.getElementById("train-ia-btn");
 
 let currentPlayer = "X";
 let gameOver = false;
 let aiThinking = false;
 let currentMode = "pvp";
-let currentTargetEpisodes = 0;
+let currentLevel = "level_0";
+let iaStatus = {
+  total_episodes: 0,
+  known_states: 0,
+  episodes_target: 0,
+  model_loaded: false,
+};
 
 function render() {
   cells.forEach((cell, index) => {
@@ -70,7 +80,7 @@ function setMode(mode) {
   aiControls.classList.toggle("inactive", mode !== "ai");
   resetGame();
   if (mode === "ai") {
-    selectLevel(currentTargetEpisodes);
+    fetchState();
   }
 }
 
@@ -93,13 +103,87 @@ function checkWinnerLocal(currentBoard) {
   return null;
 }
 
-async function selectLevel(targetEpisodes) {
-  currentTargetEpisodes = targetEpisodes;
+function updateIAStatusPanel() {
+  if (!iaLevelElement || !iaEpisodesElement || !iaStatesElement || !iaLoadedElement) {
+    return;
+  }
+
+  iaLevelElement.textContent = currentLevel;
+  iaEpisodesElement.textContent = iaStatus.total_episodes;
+  iaStatesElement.textContent = iaStatus.known_states;
+  iaLoadedElement.textContent = iaStatus.model_loaded ? "Sim" : "Não";
+}
+
+async function fetchState() {
+  try {
+    const response = await fetch("state");
+    if (!response.ok) {
+      throw new Error(`Falha ao obter estado da IA: ${response.status}`);
+    }
+
+    const data = await response.json();
+    currentLevel = data.level;
+    iaStatus = {
+      total_episodes: data.total_episodes,
+      known_states: data.known_states,
+      episodes_target: data.episodes_target ?? 0,
+      model_loaded: data.model_loaded,
+    };
+    levelButtons.forEach((button) => {
+      button.classList.toggle("active", button.dataset.level === currentLevel);
+    });
+    updateIAStatusPanel();
+    return data;
+  } catch (error) {
+    console.error("Erro ao buscar estado da IA:", error);
+    return null;
+  }
+}
+
+async function selectLevel(level) {
+  currentLevel = level;
   levelButtons.forEach((button) => {
-    button.classList.toggle("active", Number(button.dataset.target) === targetEpisodes);
+    button.classList.toggle("active", button.dataset.level === level);
   });
 
+  setStatus("Carregando nível da IA, aguarde...");
+  try {
+    const response = await fetch("set-level", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ level: currentLevel }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Falha ao definir nível: ${response.status}`);
+    }
+
+    const data = await fetchState();
+    if (data && currentMode === "ai") {
+      setStatus(
+        `Nível ${currentLevel} selecionado. Episódios treinados: ${data.total_episodes}. Selecione uma casa para jogar.`,
+      );
+    } else if (data) {
+      setStatus(
+        `Nível ${currentLevel} pronto com ${data.total_episodes} episódios. Ative o modo Humano vs IA para jogar.`,
+      );
+    }
+  } catch (error) {
+    console.error("Erro ao definir nível da IA:", error);
+    setStatus("Não foi possível atualizar o nível da IA. Verifique a conexão com o servidor.");
+  }
+}
+
+async function trainCurrentLevel() {
+  const targetEpisodes =
+    iaStatus.episodes_target && iaStatus.episodes_target > iaStatus.total_episodes
+      ? iaStatus.episodes_target
+      : iaStatus.total_episodes + 1000;
+
   setStatus("Treinando IA, aguarde...");
+
   try {
     const response = await fetch("train-level", {
       method: "POST",
@@ -113,14 +197,16 @@ async function selectLevel(targetEpisodes) {
       throw new Error(`Falha ao treinar IA: ${response.status}`);
     }
 
-    const data = await response.json();
-    const message =
-      currentMode === "ai"
-        ? `IA pronta! Total de episódios treinados: ${data.total_episodes}. Selecione uma casa para jogar.`
-        : `IA treinada com ${data.total_episodes} episódios. Ative o modo Humano vs IA para jogar contra a máquina.`;
-    setStatus(message);
+    const data = await fetchState();
+    if (data) {
+      const message =
+        currentMode === "ai"
+          ? `IA pronta! Total de episódios treinados: ${data.total_episodes}. Selecione uma casa para jogar.`
+          : `IA treinada com ${data.total_episodes} episódios. Ative o modo Humano vs IA para jogar.`;
+      setStatus(message);
+    }
   } catch (error) {
-    console.error(error);
+    console.error("Erro ao treinar a IA:", error);
     setStatus("Não foi possível treinar a IA. Verifique a conexão com o servidor.");
   }
 }
@@ -174,7 +260,7 @@ async function handleAIMove() {
     render();
     setStatus("Sua vez! Você joga com X.");
   } catch (error) {
-    console.error(error);
+    console.error("Erro ao obter jogada da IA:", error);
     aiThinking = false;
     setStatus("Ocorreu um erro ao comunicar com a IA.");
   }
@@ -224,13 +310,21 @@ modeButtons.forEach((button) => {
 
 levelButtons.forEach((button) => {
   button.addEventListener("click", () => {
-    const target = Number(button.dataset.target);
-    selectLevel(target);
+    const { level } = button.dataset;
+    if (level) {
+      selectLevel(level);
+    }
   });
 });
 
 resetButton.addEventListener("click", resetGame);
+if (trainButton) {
+  trainButton.addEventListener("click", () => {
+    trainCurrentLevel();
+  });
+}
 
 // Inicialização
 render();
 setStatus("Jogador X começa!");
+fetchState();
